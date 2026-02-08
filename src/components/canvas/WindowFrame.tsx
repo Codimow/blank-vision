@@ -27,12 +27,18 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
       initial={{ opacity: 0, scale: 0.95, x: win.x, y: win.y }}
       animate={{ 
         opacity: win.isMinimized ? 0 : 1, 
-        scale: win.isMinimized ? 0 : 1,
+        scale: win.isMinimized ? 0.8 : 1,
         x: win.x,
         y: win.y,
         width: win.width,
         height: win.height,
-        zIndex: win.zIndex 
+        zIndex: win.zIndex,
+        pointerEvents: win.isMinimized ? 'none' : 'auto' 
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 30
       }}
       onDragEnd={(_, info) => {
         updateWindow(win.id, { x: win.x + info.offset.x, y: win.y + info.offset.y });

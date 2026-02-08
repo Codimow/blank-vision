@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
 import WindowManager from './WindowManager';
+import Dock from '@/components/ui/Dock';
 import { clsx } from 'clsx';
 
 export default function InfiniteCanvas() {
@@ -22,13 +23,31 @@ export default function InfiniteCanvas() {
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       const zoomSensitivity = 0.001;
-      const newScale = Math.min(Math.max(0.1, canvas.scale - e.deltaY * zoomSensitivity), 5);
+      const oldScale = canvas.scale;
+      // Limit zoom range
+      const newScale = Math.min(Math.max(0.1, oldScale - e.deltaY * zoomSensitivity), 5);
       
-      // Calculate zoom toward pointer could be complex, let's just zoom center for MVP 
-      // or simple scale update. 
-      // To zoom toward pointer: need to adjust x/y based on mouse offset relative to canvas origin.
+      // Calculate cursor position relative to the canvas origin (top-left of the world)
+      // clientX/Y is screen coordinate.
+      // canvas.x/y is the translation of the world.
+      // World coordinate of mouse = (screen - translation) / scale
       
-      setCanvasTransform(canvas.x, canvas.y, newScale);
+      // We want the world coordinate under the mouse to remain at the same screen coordinate after zoom.
+      // screen = world * scale + translation
+      // translation = screen - world * scale
+      
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      
+      // The world point under the mouse currently:
+      const worldX = (mouseX - canvas.x) / oldScale;
+      const worldY = (mouseY - canvas.y) / oldScale;
+      
+      // New translation to keep that world point at the same mouse position:
+      const newX = mouseX - worldX * newScale;
+      const newY = mouseY - worldY * newScale;
+      
+      setCanvasTransform(newX, newY, newScale);
     } else {
       // Pan
       setCanvasTransform(canvas.x - e.deltaX, canvas.y - e.deltaY, canvas.scale);
@@ -104,25 +123,8 @@ export default function InfiniteCanvas() {
         <WindowManager />
       </motion.div>
       
-      {/* HUD / Overlay */}
-      <div className="absolute bottom-4 left-4 p-4 bg-black/50 backdrop-blur rounded-lg border border-white/10"
-           onPointerDown={(e) => e.stopPropagation()} // Prevent panning when clicking UI
-      >
-         <div className="flex gap-2">
-           <button 
-             className="px-3 py-1 bg-blue-600 rounded hover:bg-blue-500"
-             onClick={() => openWindow('github', {}, 'My Repositories')}
-           >
-             + GitHub Window
-           </button>
-           <button 
-             className="px-3 py-1 bg-neutral-700 rounded hover:bg-neutral-600"
-             onClick={() => setCanvasTransform(0, 0, 1)}
-           >
-             Reset View
-           </button>
-         </div>
-      </div>
+      {/* Dock */}
+      <Dock />
     </div>
   );
 }
