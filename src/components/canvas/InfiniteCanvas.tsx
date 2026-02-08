@@ -101,10 +101,17 @@ export default function InfiniteCanvas() {
            </button>
            <button 
              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
-             onClick={() => openWindow('browser', { url: 'https://www.google.com/search?igu=1' }, 'Web Browser')}
+             onClick={() => openWindow('browser', { url: '' }, 'Web Browser')}
            >
              <span className="w-2 h-2 rounded-full bg-emerald-500" />
              Web
+           </button>
+           <button 
+             className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+             onClick={() => openWindow('terminal', {}, 'Terminal')}
+           >
+             <span className="w-2 h-2 rounded-full bg-orange-500" />
+             Terminal
            </button>
            <div className="w-[1px] h-6 bg-white/10 mx-1 self-center" />
            <button 
