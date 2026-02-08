@@ -43,6 +43,10 @@ export default function VaultWindow() {
   };
 
   const handleOpenVault = async () => {
+    if (typeof window !== 'undefined' && !('showDirectoryPicker' in window)) {
+      alert('Your browser does not support the File System Access API. Please use a Chromium-based browser (Chrome, Edge, Brave) and ensure you are using HTTPS or localhost.');
+      return;
+    }
     try {
       const handle = await (window as any).showDirectoryPicker();
       setDirectoryHandle(handle);
