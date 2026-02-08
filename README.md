@@ -14,7 +14,7 @@ A high-performance, spatial window manager for the web. Built for systems progra
 - **Real Shell Integration**: A high-performance terminal window connected to a local `node-pty` server.
 - **Web Explorer**: A built-in browser window to load any URL directly on the canvas.
 - **GitHub Explorer**: Fetch and view repositories for any GitHub user.
-- **Concept Deep-Dive (Coming Soon)**: Map out complex topics spatially with AI-generated research nodes.
+- **Concept Deep-Dive**: Map out complex topics spatially with AI-generated research nodes and visual connection lines.\n- **Obsidian Vault Bridge**: Link your local Obsidian vault directly. Import notes, create new ones on the canvas, and export them back to your filesystem with direct read/write support.
 
 ## 🚀 Getting Started
 
