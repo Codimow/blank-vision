@@ -6,7 +6,7 @@ import { useWindowStore } from '@/store/useWindowStore';
 import WindowManager from './WindowManager';
 import ConnectionLines from './ConnectionLines';
 import { clsx } from 'clsx';
-import { Brain } from 'lucide-react';
+import { Brain, FolderOpen } from 'lucide-react';
 
 export default function InfiniteCanvas() {
   const { canvas, setCanvasTransform, openWindow } = useWindowStore();
@@ -91,6 +91,13 @@ export default function InfiniteCanvas() {
            onWheel={(e) => e.stopPropagation()}
       >
          <div className="flex gap-1">
+           <button 
+             className="px-4 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+             onClick={() => openWindow('vault', { width: 800, height: 600 }, 'Obsidian Vault')}
+           >
+             <FolderOpen size={16} />
+             Vault
+           </button>
            <button 
              className="px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
              onClick={() => openWindow('deep-dive', { width: 500, height: 600 }, 'Deep Dive')}

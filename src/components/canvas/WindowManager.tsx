@@ -7,6 +7,7 @@ import GitHubWindow from '@/apps/GitHubWindow';
 import BrowserWindow from '@/apps/BrowserWindow';
 import TerminalWindow from '@/apps/TerminalWindow';
 import DeepDiveWindow from '@/apps/DeepDiveWindow';
+import VaultWindow from '@/apps/VaultWindow';
 
 // Registry of available apps
 const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
@@ -14,6 +15,7 @@ const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   'browser': BrowserWindow,
   'terminal': TerminalWindow,
   'deep-dive': DeepDiveWindow,
+  'vault': VaultWindow,
   'default': () => <div className="p-4 text-neutral-400">Content not found</div>
 };
 
