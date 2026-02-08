@@ -10,7 +10,7 @@ interface Log {
 }
 
 export default function TerminalWindow({ windowId }: { windowId: string }) {
-  const { openWindow, closeWindow, windows, resetCanvas } = useWindowStore();
+  const { openWindow, closeWindow, windows, setCanvasTransform } = useWindowStore();
   const [logs, setLogs] = useState<Log[]>([
     { type: 'output', content: 'Welcome to Blank Vision Terminal v1.0.0' },
     { type: 'output', content: 'Type "help" for available commands.' },
@@ -49,30 +49,34 @@ export default function TerminalWindow({ windowId }: { windowId: string }) {
       case 'help':
         newLogs.push({ 
           type: 'output', 
-          content: 'Available commands:\n  help          - Show this message\n  clear         - Clear terminal\n  ls            - List open windows\n  open <app>    - Open app (github, terminal)\n  close <id>    - Close window by ID\n  reset         - Reset canvas view\n  exit          - Close this terminal' 
+          content: 'Available commands:\n  help          - Show this message\n  clear         - Clear terminal\n  ls            - List open windows\n  open <app>    - Open app (github, terminal, browser)\n  close <id>    - Close window by ID\n  reset         - Reset canvas view\n  exit          - Close this terminal' 
         });
         break;
       case 'clear':
         setLogs([]);
-        return; // Early return to avoid adding more logs
+        return; 
       case 'ls':
         const winList = Object.values(windows).map(w => `[${w.id.slice(0, 8)}] ${w.title} (${w.component})`).join('\n');
         newLogs.push({ type: 'output', content: winList || 'No open windows.' });
         break;
       case 'open':
-        if (args[0] === 'github') {
-           openWindow('github', {}, 'GitHub');
-           newLogs.push({ type: 'output', content: 'Launched GitHub.' });
-        } else if (args[0] === 'terminal') {
+        const app = args[0];
+        if (app === 'github') {
+           openWindow('github', {}, 'GitHub Explorer');
+           newLogs.push({ type: 'output', content: 'Launched GitHub Explorer.' });
+        } else if (app === 'terminal') {
            openWindow('terminal', {}, 'Terminal');
            newLogs.push({ type: 'output', content: 'Launched Terminal.' });
+        } else if (app === 'browser') {
+           const url = args[1] || 'https://www.google.com/search?igu=1';
+           openWindow('browser', { url }, 'Web Browser');
+           newLogs.push({ type: 'output', content: `Launched Web Browser at ${url}.` });
         } else {
-           newLogs.push({ type: 'error', content: `Unknown app: ${args[0]}. Try 'github' or 'terminal'.` });
+           newLogs.push({ type: 'error', content: `Unknown app: ${app}. Try 'github', 'terminal', or 'browser'.` });
         }
         break;
       case 'close':
         if (args[0]) {
-            // Find window by partial ID match for convenience
             const targetId = Object.keys(windows).find(id => id.startsWith(args[0]));
             if (targetId) {
                 closeWindow(targetId);
@@ -85,7 +89,7 @@ export default function TerminalWindow({ windowId }: { windowId: string }) {
         }
         break;
       case 'reset':
-        resetCanvas();
+        setCanvasTransform(0, 0, 1);
         newLogs.push({ type: 'output', content: 'Canvas view reset.' });
         break;
       case 'exit':
@@ -107,30 +111,30 @@ export default function TerminalWindow({ windowId }: { windowId: string }) {
 
   return (
     <div 
-      className="h-full bg-black/90 text-green-500 font-mono text-sm p-4 overflow-hidden flex flex-col"
+      className="h-full bg-black/95 text-emerald-500 font-mono text-xs p-4 overflow-hidden flex flex-col"
       onClick={handleContainerClick}
     >
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-2">
         {logs.map((log, i) => (
           <div key={i} className={clsx(
-            "whitespace-pre-wrap break-words",
-            log.type === 'input' && "text-white font-bold opacity-80",
-            log.type === 'error' && "text-red-400"
+            "whitespace-pre-wrap break-words leading-relaxed",
+            log.type === 'input' && "text-white font-bold",
+            log.type === 'error' && "text-rose-400"
           )}>
-            {log.type === 'input' ? '> ' : ''}{log.content}
+            {log.type === 'input' ? <span className="text-emerald-700 mr-2">➜</span> : ''}{log.content}
           </div>
         ))}
         <div ref={endRef} />
       </div>
-      <div className="flex items-center gap-2 mt-2 border-t border-green-500/20 pt-2">
-        <span className="text-green-500 font-bold">{'>'}</span>
+      <div className="flex items-center gap-2 mt-4 border-t border-emerald-500/10 pt-3">
+        <span className="text-emerald-700 font-bold">➜</span>
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent focus:outline-none text-white placeholder-green-500/30"
+          className="flex-1 bg-transparent focus:outline-none text-white placeholder-emerald-900"
           placeholder="Enter command..."
           autoFocus
         />
