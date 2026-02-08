@@ -15,14 +15,11 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
   const { updateWindow, closeWindow, focusWindow } = useWindowStore();
   const dragControls = useDragControls();
   
-  // We need to sync local drag state with global store on DragEnd
-  // Framer motion handles the visual drag smoothly.
-  
   return (
     <motion.div
       drag
       dragControls={dragControls}
-      dragListener={false} // Only drag from handle
+      dragListener={false}
       dragMomentum={false}
       initial={{ opacity: 0, scale: 0.95, x: win.x, y: win.y }}
       animate={{ 
@@ -43,12 +40,10 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
       onDragEnd={(_, info) => {
         updateWindow(win.id, { x: win.x + info.offset.x, y: win.y + info.offset.y });
       }}
-      // Use onPointerDown to focus window when clicked anywhere
       onPointerDown={() => focusWindow(win.id)}
       className={clsx(
-        "absolute flex flex-col bg-[#1e1e1e] border border-white/10 rounded-lg shadow-2xl overflow-hidden",
-        "backdrop-blur-md bg-opacity-90",
-        // Active state could add a border highlight
+        "absolute flex flex-col bg-[#1e1e1e] border border-white/10 rounded-xl shadow-2xl overflow-hidden",
+        "backdrop-blur-md bg-opacity-95",
       )}
       style={{
         position: 'absolute', 
@@ -58,37 +53,40 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
     >
       {/* Title Bar */}
       <div 
-        className="h-10 bg-white/5 border-b border-white/5 flex items-center justify-between px-3 select-none cursor-grab active:cursor-grabbing"
+        className="h-11 bg-white/5 border-b border-white/5 flex items-center justify-between px-4 select-none cursor-grab active:cursor-grabbing"
         onPointerDown={(e) => {
           dragControls.start(e);
           focusWindow(win.id);
         }}
       >
-        <span className="text-sm font-medium text-neutral-300">{win.title}</span>
-        <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
-           <button onClick={() => updateWindow(win.id, { isMinimized: true })} className="p-1 hover:bg-white/10 rounded">
-             <Minus size={14} className="text-neutral-400" />
+        <span className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">{win.title}</span>
+        <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
+           <button onClick={() => updateWindow(win.id, { isMinimized: true })} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+             <Minus size={14} className="text-neutral-500" />
            </button>
-           <button onClick={() => updateWindow(win.id, { isMaximized: !win.isMaximized })} className="p-1 hover:bg-white/10 rounded">
-             {win.isMaximized ? <Square size={12} className="text-neutral-400"/> : <Maximize2 size={12} className="text-neutral-400" />}
+           <button onClick={() => updateWindow(win.id, { isMaximized: !win.isMaximized })} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+             {win.isMaximized ? <Square size={12} className="text-neutral-500"/> : <Maximize2 size={12} className="text-neutral-500" />}
            </button>
-           <button onClick={() => closeWindow(win.id)} className="p-1 hover:bg-red-500/20 hover:text-red-400 rounded group">
-             <X size={14} className="text-neutral-400 group-hover:text-red-400" />
+           <button onClick={() => closeWindow(win.id)} className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors group">
+             <X size={14} className="text-neutral-500 group-hover:text-red-400" />
            </button>
         </div>
       </div>
 
       {/* Content Content */}
-      <div className="flex-1 overflow-auto relative">
+      <div 
+        className="flex-1 overflow-auto relative"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {children}
       </div>
 
-      {/* Resize Handle (Standard Pointer Events) */}
+      {/* Resize Handle */}
       <div 
-        className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize flex items-end justify-end p-1"
+        className="absolute bottom-0 right-0 w-8 h-8 cursor-nwse-resize flex items-end justify-end p-1.5 z-50"
         onPointerDown={(e) => {
             e.stopPropagation(); 
-            focusWindow(win.id); // Focus on resize start
+            focusWindow(win.id);
             const startX = e.clientX;
             const startY = e.clientY;
             const startWidth = win.width;
@@ -109,7 +107,7 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
             window.addEventListener('pointerup', onUp);
         }}
       >
-         <div className="w-2 h-2 bg-white/30 rounded-full" />
+         <div className="w-1.5 h-1.5 bg-white/20 rounded-full" />
       </div>
     </motion.div>
   );

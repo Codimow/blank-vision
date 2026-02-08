@@ -4,12 +4,12 @@ import React from 'react';
 import { useWindowStore } from '@/store/useWindowStore';
 import WindowFrame from './WindowFrame';
 import GitHubWindow from '@/apps/GitHubWindow';
-import TerminalWindow from '@/apps/TerminalWindow';
+import BrowserWindow from '@/apps/BrowserWindow';
 
 // Registry of available apps
 const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   'github': GitHubWindow,
-  'terminal': TerminalWindow,
+  'browser': BrowserWindow,
   'default': () => <div className="p-4 text-neutral-400">Content not found</div>
 };
 
