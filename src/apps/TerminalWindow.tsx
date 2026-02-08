@@ -1,144 +1,81 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useWindowStore } from '@/store/useWindowStore';
-import { clsx } from 'clsx';
+import React, { useEffect, useRef } from 'react';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
+import { io, Socket } from 'socket.io-client';
+import 'xterm/css/xterm.css';
 
-interface Log {
-  type: 'input' | 'output' | 'error';
-  content: string;
-}
-
-export default function TerminalWindow({ windowId }: { windowId: string }) {
-  const { openWindow, closeWindow, windows, setCanvasTransform } = useWindowStore();
-  const [logs, setLogs] = useState<Log[]>([
-    { type: 'output', content: 'Welcome to Blank Vision Terminal v1.0.0' },
-    { type: 'output', content: 'Type "help" for available commands.' },
-  ]);
-  const [input, setInput] = useState('');
-  const endRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const scrollToBottom = () => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+export default function TerminalWindow() {
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const xtermRef = useRef<Terminal | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [logs]);
+    if (!terminalRef.current) return;
 
-  // Focus input on click anywhere in terminal
-  const handleContainerClick = () => {
-    // Only focus if user isn't selecting text
-    if (window.getSelection()?.toString().length === 0) {
-        inputRef.current?.focus();
-    }
-  };
+    // Initialize xterm.js
+    const term = new Terminal({
+      cursorBlink: true,
+      theme: {
+        background: '#0a0a0a',
+        foreground: '#10b981', // emerald-500
+        cursor: '#10b981',
+        selectionBackground: 'rgba(16, 185, 129, 0.3)',
+      },
+      fontSize: 13,
+      fontFamily: 'JetBrains Mono, Menlo, Monaco, "Courier New", monospace',
+      allowProposedApi: true,
+    });
 
-  const handleCommand = (cmd: string) => {
-    const trimmed = cmd.trim();
-    if (!trimmed) return;
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(terminalRef.current);
+    fitAddon.fit();
 
-    const parts = trimmed.split(' ');
-    const command = parts[0].toLowerCase();
-    const args = parts.slice(1);
+    xtermRef.current = term;
 
-    const newLogs: Log[] = [{ type: 'input', content: trimmed }];
+    // Connect to PTY server
+    const socket = io('http://localhost:3001');
+    socketRef.current = socket;
 
-    switch (command) {
-      case 'help':
-        newLogs.push({ 
-          type: 'output', 
-          content: 'Available commands:\n  help          - Show this message\n  clear         - Clear terminal\n  ls            - List open windows\n  open <app>    - Open app (github, terminal, browser)\n  close <id>    - Close window by ID\n  reset         - Reset canvas view\n  exit          - Close this terminal' 
-        });
-        break;
-      case 'clear':
-        setLogs([]);
-        return; 
-      case 'ls':
-        const winList = Object.values(windows).map(w => `[${w.id.slice(0, 8)}] ${w.title} (${w.component})`).join('\n');
-        newLogs.push({ type: 'output', content: winList || 'No open windows.' });
-        break;
-      case 'open':
-        const app = args[0];
-        if (app === 'github') {
-           openWindow('github', {}, 'GitHub Explorer');
-           newLogs.push({ type: 'output', content: 'Launched GitHub Explorer.' });
-        } else if (app === 'terminal') {
-           openWindow('terminal', {}, 'Terminal');
-           newLogs.push({ type: 'output', content: 'Launched Terminal.' });
-        } else if (app === 'browser') {
-           const url = args[1] || 'https://www.google.com/search?igu=1';
-           openWindow('browser', { url }, 'Web Browser');
-           newLogs.push({ type: 'output', content: `Launched Web Browser at ${url}.` });
-        } else {
-           newLogs.push({ type: 'error', content: `Unknown app: ${app}. Try 'github', 'terminal', or 'browser'.` });
-        }
-        break;
-      case 'close':
-        if (args[0]) {
-            const targetId = Object.keys(windows).find(id => id.startsWith(args[0]));
-            if (targetId) {
-                closeWindow(targetId);
-                newLogs.push({ type: 'output', content: `Closed window ${targetId.slice(0, 8)}.` });
-            } else {
-                newLogs.push({ type: 'error', content: `Window not found: ${args[0]}` });
-            }
-        } else {
-            newLogs.push({ type: 'error', content: 'Usage: close <id>' });
-        }
-        break;
-      case 'reset':
-        setCanvasTransform(0, 0, 1);
-        newLogs.push({ type: 'output', content: 'Canvas view reset.' });
-        break;
-      case 'exit':
-        closeWindow(windowId);
-        return;
-      default:
-        newLogs.push({ type: 'error', content: `Command not found: ${command}` });
-    }
+    socket.on('connect', () => {
+      term.writeln('\x1b[1;32mConnected to Real Shell (zsh)\x1b[0m');
+    });
 
-    setLogs(prev => [...prev, ...newLogs]);
-  };
+    socket.on('output', (data: string) => {
+      term.write(data);
+    });
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleCommand(input);
-      setInput('');
-    }
-  };
+    socket.on('connect_error', () => {
+      term.writeln('\x1b[1;31mError: Could not connect to PTY server at port 3001.\x1b[0m');
+      term.writeln('Make sure the PTY server is running with: node pty-server.js');
+    });
+
+    term.onData((data) => {
+      socket.emit('input', data);
+    });
+
+    const handleResize = () => {
+      fitAddon.fit();
+      socket.emit('resize', { cols: term.cols, rows: term.rows });
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    // Initial fit
+    setTimeout(handleResize, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      socket.disconnect();
+      term.dispose();
+    };
+  }, []);
 
   return (
-    <div 
-      className="h-full bg-black/95 text-emerald-500 font-mono text-xs p-4 overflow-hidden flex flex-col"
-      onClick={handleContainerClick}
-    >
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-2">
-        {logs.map((log, i) => (
-          <div key={i} className={clsx(
-            "whitespace-pre-wrap break-words leading-relaxed",
-            log.type === 'input' && "text-white font-bold",
-            log.type === 'error' && "text-rose-400"
-          )}>
-            {log.type === 'input' ? <span className="text-emerald-700 mr-2">➜</span> : ''}{log.content}
-          </div>
-        ))}
-        <div ref={endRef} />
-      </div>
-      <div className="flex items-center gap-2 mt-4 border-t border-emerald-500/10 pt-3">
-        <span className="text-emerald-700 font-bold">➜</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent focus:outline-none text-white placeholder-emerald-900"
-          placeholder="Enter command..."
-          autoFocus
-        />
-      </div>
+    <div className="h-full w-full bg-[#0a0a0a] p-2 overflow-hidden">
+      <div ref={terminalRef} className="h-full w-full" />
     </div>
   );
 }
