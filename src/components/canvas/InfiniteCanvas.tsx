@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
 import WindowManager from './WindowManager';
+import ConnectionLines from './ConnectionLines';
 import { clsx } from 'clsx';
 import { Brain } from 'lucide-react';
 
@@ -12,14 +13,12 @@ export default function InfiniteCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const handleWheel = (e: React.WheelEvent) => {
-    // If Ctrl/Meta is pressed, zoom
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       const zoomSensitivity = 0.001;
       const newScale = Math.min(Math.max(0.1, canvas.scale - e.deltaY * zoomSensitivity), 5);
       setCanvasTransform(canvas.x, canvas.y, newScale);
     } else {
-      // Pan
       setCanvasTransform(canvas.x - e.deltaX, canvas.y - e.deltaY, canvas.scale);
     }
   };
@@ -28,7 +27,6 @@ export default function InfiniteCanvas() {
   const lastPos = useRef({ x: 0, y: 0 });
 
   const onPointerDown = (e: React.PointerEvent) => {
-    // Only drag on background
     if (e.target !== containerRef.current) return;
 
     if (e.button === 0 || e.button === 1) { // Left or Middle
@@ -56,7 +54,6 @@ export default function InfiniteCanvas() {
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
-  // Background Grid
   const gridSize = 50 * canvas.scale;
   const backgroundPosition = `${canvas.x}px ${canvas.y}px`;
   
@@ -76,7 +73,7 @@ export default function InfiniteCanvas() {
     >
       {/* World Container */}
       <motion.div
-        className="absolute top-0 left-0 origin-top-left will-change-transform"
+        className="absolute top-0 left-0 origin-top-left will-change-transform h-full w-full"
         style={{
           x: canvas.x,
           y: canvas.y,
@@ -84,6 +81,7 @@ export default function InfiniteCanvas() {
         }}
         initial={false}
       >
+        <ConnectionLines />
         <WindowManager />
       </motion.div>
       
