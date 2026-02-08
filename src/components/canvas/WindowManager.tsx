@@ -6,12 +6,14 @@ import WindowFrame from './WindowFrame';
 import GitHubWindow from '@/apps/GitHubWindow';
 import BrowserWindow from '@/apps/BrowserWindow';
 import TerminalWindow from '@/apps/TerminalWindow';
+import DeepDiveWindow from '@/apps/DeepDiveWindow';
 
 // Registry of available apps
 const COMPONENT_REGISTRY: Record<string, React.ComponentType<any>> = {
   'github': GitHubWindow,
   'browser': BrowserWindow,
   'terminal': TerminalWindow,
+  'deep-dive': DeepDiveWindow,
   'default': () => <div className="p-4 text-neutral-400">Content not found</div>
 };
 

@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useWindowStore } from '@/store/useWindowStore';
 import WindowManager from './WindowManager';
 import { clsx } from 'clsx';
+import { Brain } from 'lucide-react';
 
 export default function InfiniteCanvas() {
   const { canvas, setCanvasTransform, openWindow } = useWindowStore();
@@ -92,6 +93,14 @@ export default function InfiniteCanvas() {
            onWheel={(e) => e.stopPropagation()}
       >
          <div className="flex gap-1">
+           <button 
+             className="px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+             onClick={() => openWindow('deep-dive', { width: 500, height: 600 }, 'Deep Dive')}
+           >
+             <Brain size={16} />
+             Deep Dive
+           </button>
+           <div className="w-[1px] h-6 bg-white/10 mx-1 self-center" />
            <button 
              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
              onClick={() => openWindow('github', {}, 'GitHub Explorer')}

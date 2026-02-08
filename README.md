@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌊 Blank Vision
 
-## Getting Started
+A high-performance, spatial window manager for the web. Built for systems programmers and developers who need an infinite canvas to map out their thoughts, code, and the web.
 
-First, run the development server:
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![Tailwind](https://img.shields.io/badge/Tailwind-CSS-blue)
+![Effect](https://img.shields.io/badge/Effect-TS-yellow)
+
+## ✨ Features
+
+- **Infinite Canvas**: A pannable and zoomable background with a radial grid system.
+- **Spatial Windowing**: Draggable and resizable windows with smooth, spring-based transitions.
+- **Real Shell Integration**: A high-performance terminal window connected to a local `node-pty` server.
+- **Web Explorer**: A built-in browser window to load any URL directly on the canvas.
+- **GitHub Explorer**: Fetch and view repositories for any GitHub user.
+- **Concept Deep-Dive (Coming Soon)**: Map out complex topics spatially with AI-generated research nodes.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [pnpm](https://pnpm.io/)
+- [Node.js](https://nodejs.org/) (v20+)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Codimow/blank-vision.git
+   cd blank-vision
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Rebuild native modules (for the PTY shell):
+   ```bash
+   pnpm rebuild node-pty
+   ```
+
+### Running Locally
+
+To start both the Next.js dev server and the PTY shell bridge:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm run start-all
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Blank Vision is built with a focus on performance and modularity:
 
-## Learn More
+- **Framework**: Next.js (App Router)
+- **State Management**: Zustand (for the spatial state engine)
+- **Animations**: Framer Motion
+- **Terminal**: xterm.js + socket.io
+- **Styling**: Tailwind CSS + clsx/tailwind-merge
 
-To learn more about Next.js, take a look at the following resources:
+## 🤝 Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is a work in progress. Feel free to open issues or submit pull requests.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📄 License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT © [Codimow](https://github.com/Codimow)

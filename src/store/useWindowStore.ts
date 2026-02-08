@@ -12,7 +12,7 @@ export interface WindowState {
   zIndex: number;
   isMinimized: boolean;
   isMaximized: boolean;
-  component: string; // ID of the component to render (e.g., 'github', 'terminal')
+  component: string; 
   props?: Record<string, any>;
 }
 
@@ -26,11 +26,11 @@ interface StoreState {
   canvas: CanvasState;
   windows: Record<string, WindowState>;
   activeWindowId: string | null;
-  windowOrder: string[]; // Array of IDs to manage z-index stacking order
+  windowOrder: string[]; 
 
   // Actions
   setCanvasTransform: (x: number, y: number, scale: number) => void;
-  openWindow: (component: string, props?: any, title?: string) => void;
+  openWindow: (component: string, props?: any, title?: string, position?: { x: number, y: number }) => void;
   closeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
   updateWindow: (id: string, updates: Partial<WindowState>) => void;
@@ -50,27 +50,30 @@ export const useWindowStore = create<StoreState>()(
 
       resetCanvas: () => set({ canvas: { x: 0, y: 0, scale: 1 } }),
 
-      openWindow: (component, props = {}, title = 'New Window') => {
+      openWindow: (component, props = {}, title = 'New Window', position) => {
         const id = uuidv4();
         const { canvas } = get();
         
-        // Center new window relative to current canvas view, somewhat
-        // Simple logic: center of screen - offset by canvas position
-        // We use a fallback for window dimensions if not available (SSR)
-        const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
-        const winHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+        let startX, startY;
 
-        const startX = -canvas.x + (winWidth / 2) - 300; 
-        const startY = -canvas.y + (winHeight / 2) - 200;
+        if (position) {
+            startX = position.x;
+            startY = position.y;
+        } else {
+            const winWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+            const winHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+            startX = -canvas.x + (winWidth / 2) - 300; 
+            startY = -canvas.y + (winHeight / 2) - 200;
+        }
 
         const newWindow: WindowState = {
           id,
           title,
-          x: startX + (Math.random() * 50), // slight scatter
-          y: startY + (Math.random() * 50),
-          width: 600,
-          height: 400,
-          zIndex: 10, // Initial base
+          x: startX + (position ? 0 : Math.random() * 50),
+          y: startY + (position ? 0 : Math.random() * 50),
+          width: props.width || 600,
+          height: props.height || 400,
+          zIndex: 10,
           isMinimized: false,
           isMaximized: false,
           component,
@@ -96,8 +99,6 @@ export const useWindowStore = create<StoreState>()(
 
       focusWindow: (id) =>
         set((state) => {
-          // Move id to the end of windowOrder to make it render on top (conceptually)
-          // We will map index in windowOrder to zIndex in the component
           const newOrder = state.windowOrder.filter((wId) => wId !== id);
           newOrder.push(id);
           return {
@@ -118,7 +119,6 @@ export const useWindowStore = create<StoreState>()(
       name: 'blank-vision-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Persist windows and canvas, but maybe not ephemeral UI states if we wanted to restrict
         canvas: state.canvas,
         windows: state.windows,
         windowOrder: state.windowOrder,
