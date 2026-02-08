@@ -27,7 +27,7 @@ export default function Dock() {
       <DockItem 
         icon={<Terminal size={24} />} 
         label="Terminal" 
-        onClick={() => openWindow('default', {}, 'Terminal')} 
+        onClick={() => openWindow('terminal', {}, 'Terminal')} 
       />
       
       <div className="w-px h-8 bg-white/20 mx-2" />

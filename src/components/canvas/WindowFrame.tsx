@@ -87,7 +87,8 @@ export default function WindowFrame({ window: win, children }: WindowFrameProps)
       <div 
         className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize flex items-end justify-end p-1"
         onPointerDown={(e) => {
-            e.stopPropagation(); // Don't trigger drag
+            e.stopPropagation(); 
+            focusWindow(win.id); // Focus on resize start
             const startX = e.clientX;
             const startY = e.clientY;
             const startWidth = win.width;
